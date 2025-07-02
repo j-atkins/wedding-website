@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Wedding</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7; /* Light grey background */
+            color: #333;
+        }
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://placehold.co/1920x800/667eea/ffffff?text=Your+Wedding+Photo') no-repeat center center/cover;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        .countdown-timer {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 1rem;
+        }
+        .section-heading {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea; /* A nice purple/blue */
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            background-color: white;
+        }
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            min-height: 80px;
+        }
+        .submit-button {
+            background-color: #667eea; /* Tailwind blue-500 equivalent */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        .submit-button:hover {
+            background-color: #5a67d8; /* Darker blue on hover */
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            display: none; /* Hidden by default */
+            max-width: 90%;
+            width: 400px;
+        }
+        .message-box.show {
+            display: block;
+        }
+        .message-box .close-button {
+            background-color: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            display: none; /* Hidden by default */
+        }
+        .loading-spinner {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #667eea; /* Blue */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .passcode-button {
+            background-color: #48bb78; /* Green for verify */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .passcode-button:hover {
+            background-color: #38a169; /* Darker green on hover */
+        }
+        .error-message {
+            color: #ef4444; /* Red */
+            font-size: 0.875rem; /* text-sm */
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .guest-block {
+            border: 1px solid #e2e8f0; /* gray-200 */
+            padding: 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-bottom: 1rem;
+            background-color: #f8fafc; /* gray-50 */
+        }
+        .guest-block label {
+            margin-bottom: 0.5rem;
+        }
+        .guest-block .form-input, .guest-block .form-select, .guest-block .form-textarea {
+            margin-bottom: 0.75rem; /* Adjust margin for inputs within guest block */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container mx-auto px-4">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4">Sarah & John</h1>
+            <p class="text-2xl md:text-3xl mb-6">Are Getting Married!</p>
+            <div class="countdown-timer" id="countdown"></div>
+            <p class="text-lg mt-4">Join us to celebrate our special day.</p>
+        </div>
+    </section>
+
+    <!-- Our Story Section -->
+    <section class="py-16 px-4">
+        <div class="container mx-auto">
+            <h2 class="section-heading">Our Story</h2>
+            <div class="max-w-3xl mx-auto text-center text-lg leading-relaxed">
+                <p class="mb-4">It all started on a rainy Tuesday in a small coffee shop. John, engrossed in his book, accidentally spilled his latte on Sarah's new scarf. What began as an apology quickly turned into laughter, then a long conversation, and eventually, a first date. From that moment, we knew something special was brewing.</p>
+                <p class="mb-4">Through countless adventures, shared dreams, and unwavering support, our love has grown stronger with each passing day. We've explored new cities, hiked breathtaking trails, and even survived assembling flat-pack furniture together. Every moment has been a testament to our bond.</p>
+                <p>Now, we're incredibly excited to embark on our greatest adventure yet: marriage. We can't wait to celebrate this new chapter with all of our beloved friends and family.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wedding Details Section -->
+    <section class="py-16 bg-white px-4">
+        <div class="container mx-auto">
+            <h2 class="section-heading">The Big Day</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">Ceremony</h3>
+                    <p class="text-lg mb-2"><strong>Date:</strong> Saturday, October 26, 2025</p>
+                    <p class="text-lg mb-2"><strong>Time:</strong> 2:00 PM</p>
+                    <p class="text-lg mb-2"><strong>Location:</strong> St. Michael's Church</p>
+                    <p class="text-lg mb-2">123 Church Road, Cityville, ST 45678</p>
+                    <a href="https://maps.google.com/?q=St.+Michael%27s+Church,+Cityville" target="_blank" class="text-blue-600 hover:underline">View on Map</a>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">Reception</h3>
+                    <p class="text-lg mb-2"><strong>Time:</strong> 6:00 PM - 11:00 PM</p>
+                    <p class="text-lg mb-2"><strong>Location:</strong> The Grand Ballroom</p>
+                    <p class="text-lg mb-2">456 Event Avenue, Townsville, TV 98765</p>
+                    <a href="https://maps.google.com/?q=The+Grand+Ballroom,+Townsville" target="_blank" class="text-blue-600 hover:underline">View on Map</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RSVP Section -->
+    <section class="py-16 px-4">
+        <div class="container mx-auto">
+            <h2 class="section-heading">RSVP</h2>
+            <div class="card max-w-2xl mx-auto p-6 md:p-8">
+                <p class="text-center text-lg mb-6">Please RSVP by September 15, 2025.</p>
+
+                <!-- Passcode Input Section -->
+                <div id="passcodeSection">
+                    <label for="passcode" class="block text-gray-700 text-sm font-bold mb-2">Enter Passcode to RSVP:</label>
+                    <input type="password" id="passcode" class="form-input" placeholder="Your secret code" required>
+                    <button type="button" id="verifyPasscodeBtn" class="passcode-button">Verify Code</button>
+                    <p id="passcodeError" class="error-message" style="display:none;">Incorrect passcode. Please try again.</p>
+                </div>
+
+                <!-- RSVP Form (initially hidden) -->
+                <form id="rsvpForm" class="space-y-4" style="display:none;">
+                    <div>
+                        <label for="primaryFullName" class="block text-gray-700 text-sm font-bold mb-2">Your Full Name (Primary Contact):</label>
+                        <input type="text" id="primaryFullName" name="Primary Full Name" class="form-input" placeholder="e.g., Jane Doe" required>
+                    </div>
+                    <div>
+                        <label for="primaryEmail" class="block text-gray-700 text-sm font-bold mb-2">Your Email:</label>
+                        <input type="email" id="primaryEmail" name="Primary Email" class="form-input" placeholder="your.email@example.com" required>
+                    </div>
+                    <div>
+                        <label for="numGuestsResponding" class="block text-gray-700 text-sm font-bold mb-2">How many people are you responding for (including yourself)?</label>
+                        <input type="number" id="numGuestsResponding" name="Number of Guests Responding For" class="form-input" min="1" value="1" max="10" required>
+                    </div>
+
+                    <div id="guestDetailsContainer" style="display:none;">
+                        <h4 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Details for Each Guest:</h4>
+                        <!-- Guest name, attendance, meal preference, and allergies inputs will be added here by JS -->
+                    </div>
+
+                    <div>
+                        <label for="overallMessage" class="block text-gray-700 text-sm font-bold mb-2">Your Message (optional):</label>
+                        <textarea id="overallMessage" name="Overall Message" class="form-textarea" placeholder="Any special requests or well wishes?"></textarea>
+                    </div>
+                    <button type="submit" class="submit-button">Send RSVP</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 text-center">
+        <div class="container mx-auto px-4">
+            <p>&copy; 2025 Sarah & John. All Rights Reserved.</p>
+            <p class="mt-2">Can't wait to celebrate with you!</p>
+        </div>
+    </footer>
+
+    <!-- Message Box for success/error -->
+    <div id="messageBox" class="message-box">
+        <p id="messageText" class="text-lg font-semibold"></p>
+        <button id="closeMessageBox" class="close-button">Close</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        // --- Countdown Timer ---
+        const countdownDate = new Date("October 26, 2025 14:00:00").getTime();
+        const countdownElement = document.getElementById("countdown");
+
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = countdownDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                countdownElement.innerHTML = "We're Married!";
+            } else {
+                countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+        };
+
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown(); // Initial call to display immediately
+
+        // --- RSVP Form Logic ---
+        const rsvpForm = document.getElementById('rsvpForm');
+        const numGuestsRespondingInput = document.getElementById('numGuestsResponding'); // New input for total guests
+        const guestDetailsContainer = document.getElementById('guestDetailsContainer');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+        const closeMessageBox = document.getElementById('closeMessageBox');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Passcode elements
+        const passcodeSection = document.getElementById('passcodeSection');
+        const passcodeInput = document.getElementById('passcode');
+        const verifyPasscodeBtn = document.getElementById('verifyPasscodeBtn');
+        const passcodeError = document.getElementById('passcodeError');
+
+        // IMPORTANT: Replace this with your deployed Google Apps Script Web App URL
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE'; // *** IMPORTANT: UPDATE THIS ***
+
+        // *** IMPORTANT: Set your desired passcode here ***
+        const CORRECT_PASSCODE = 'wedding2025'; // Change this to your secret code!
+
+        // Passcode verification
+        verifyPasscodeBtn.addEventListener('click', () => {
+            if (passcodeInput.value === CORRECT_PASSCODE) {
+                passcodeSection.style.display = 'none'; // Hide passcode section
+                rsvpForm.style.display = 'block'; // Show RSVP form
+                passcodeError.style.display = 'none'; // Hide any previous error
+                updateGuestDetailsInputs(); // Initial call to populate guest fields
+            } else {
+                passcodeError.style.display = 'block'; // Show error message
+            }
+        });
+
+        // Update guest details inputs when number of guests changes
+        numGuestsRespondingInput.addEventListener('input', updateGuestDetailsInputs);
+
+        function updateGuestDetailsInputs() {
+            const count = parseInt(numGuestsRespondingInput.value);
+            guestDetailsContainer.innerHTML = ''; // Clear existing inputs
+
+            // Ensure count doesn't exceed 10 (client-side validation)
+            const actualCount = Math.min(count, 10);
+            if (count > 10) {
+                numGuestsRespondingInput.value = 10; // Cap the input value
+                showMessage('You can RSVP for a maximum of 10 guests, including yourself.', 'error');
+            }
+
+            if (actualCount > 0) {
+                guestDetailsContainer.style.display = 'block'; // Show container if guests exist
+                for (let i = 0; i < actualCount; i++) {
+                    const guestIndex = i + 1;
+                    const div = document.createElement('div');
+                    div.className = 'guest-block'; // Use the new guest-block class for styling
+                    div.innerHTML = `
+                        <h5 class="text-md font-semibold mb-2">Guest ${guestIndex}</h5>
+                        <label for="guestName${guestIndex}" class="block text-gray-600 text-sm mb-1">Name:</label>
+                        <input type="text" id="guestName${guestIndex}" name="Guest ${guestIndex} Name" class="form-input" placeholder="Guest ${guestIndex} Full Name" required>
+
+                        <label for="attendingGuest${guestIndex}" class="block text-gray-600 text-sm mb-1">Attending?</label>
+                        <select id="attendingGuest${guestIndex}" name="Attending Guest ${guestIndex}" class="form-select" required>
+                            <option value="">Please select...</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+
+                        <div id="mealAllergiesGuest${guestIndex}" style="display:none;">
+                            <label for="meal${guestIndex}" class="block text-gray-600 text-sm mb-1">Meal Preference:</label>
+                            <select id="meal${guestIndex}" name="Meal Preference Guest ${guestIndex}" class="form-select" required>
+                                <option value="">Select Meal</option>
+                                <option value="Chicken">Chicken</option>
+                                <option value="Beef">Beef</option>
+                                <option value="Vegetarian">Vegetarian</option>
+                                <option value="Vegan">Vegan</option>
+                                <option value="Allergies/Other">Allergies/Other (please specify below)</option>
+                            </select>
+
+                            <label for="allergies${guestIndex}" class="block text-gray-600 text-sm mb-1 mt-2">Allergies/Intolerances or other dietary needs:</label>
+                            <textarea id="allergies${guestIndex}" name="Allergies Guest ${guestIndex}" class="form-textarea" placeholder="e.g., Nut allergy, gluten-free"></textarea>
+                        </div>
+                    `;
+                    guestDetailsContainer.appendChild(div);
+
+                    // Add event listener for individual guest attendance select
+                    const attendingGuestSelect = document.getElementById(`attendingGuest${guestIndex}`);
+                    const mealAllergiesDiv = document.getElementById(`mealAllergiesGuest${guestIndex}`);
+
+                    attendingGuestSelect.addEventListener('change', () => {
+                        if (attendingGuestSelect.value === 'Yes') {
+                            mealAllergiesDiv.style.display = 'block';
+                            // Make meal preference required if attending
+                            document.getElementById(`meal${guestIndex}`).setAttribute('required', 'true');
+                        } else {
+                            mealAllergiesDiv.style.display = 'none';
+                            // Remove required attribute if not attending
+                            document.getElementById(`meal${guestIndex}`).removeAttribute('required');
+                            // Optionally clear values if not attending
+                            document.getElementById(`meal${guestIndex}`).value = '';
+                            document.getElementById(`allergies${guestIndex}`).value = '';
+                        }
+                    });
+                    // Trigger change event for initial state if value is pre-set (e.g., from browser autofill)
+                    attendingGuestSelect.dispatchEvent(new Event('change'));
+                }
+            } else {
+                guestDetailsContainer.style.display = 'none'; // Hide container if no guests
+            }
+        }
+
+        // Handle form submission
+        rsvpForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+
+            loadingOverlay.classList.add('show'); // Show loading spinner
+
+            const formData = new FormData(rsvpForm);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+
+            // Manually collect dynamically generated guest details
+            const count = parseInt(numGuestsRespondingInput.value);
+            const submissionCount = Math.min(count, 10); // Ensure we don't go over 10
+
+            for (let i = 0; i < submissionCount; i++) {
+                const guestIndex = i + 1;
+                const guestNameInput = document.getElementById(`guestName${guestIndex}`);
+                const attendingGuestSelect = document.getElementById(`attendingGuest${guestIndex}`);
+                const mealSelect = document.getElementById(`meal${guestIndex}`);
+                const allergiesInput = document.getElementById(`allergies${guestIndex}`);
+
+                if (guestNameInput) {
+                    data[`Guest ${guestIndex} Name`] = guestNameInput.value;
+                }
+                if (attendingGuestSelect) {
+                    data[`Attending Guest ${guestIndex}`] = attendingGuestSelect.value;
+                }
+
+                // Only collect meal and allergies if the guest is attending
+                if (attendingGuestSelect && attendingGuestSelect.value === 'Yes') {
+                    if (mealSelect) {
+                        data[`Meal Preference Guest ${guestIndex}`] = mealSelect.value;
+                    }
+                    if (allergiesInput) {
+                        data[`Allergies Guest ${guestIndex}`] = allergiesInput.value;
+                    }
+                } else {
+                    // If not attending, ensure these fields are empty in the data sent
+                    data[`Meal Preference Guest ${guestIndex}`] = '';
+                    data[`Allergies Guest ${guestIndex}`] = '';
+                }
+            }
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Required for Google Apps Script as a web app
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(data).toString(),
+                });
+
+                showMessage('Thank you for your RSVP! We look forward to celebrating with you.', 'success');
+                rsvpForm.reset(); // Clear the form
+                guestDetailsContainer.style.display = 'none'; // Hide guest details container
+                guestDetailsContainer.innerHTML = ''; // Clear guest details
+                // After successful submission, hide the form and show passcode section again
+                rsvpForm.style.display = 'none';
+                passcodeSection.style.display = 'block';
+                passcodeInput.value = ''; // Clear passcode input
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                showMessage('There was an error submitting your RSVP. Please try again or contact us directly.', 'error');
+            } finally {
+                loadingOverlay.classList.remove('show'); // Hide loading spinner
+            }
+        });
+
+        // Message box functions
+        function showMessage(msg, type) {
+            messageText.textContent = msg;
+            messageText.className = 'text-lg font-semibold ' + (type === 'success' ? 'text-green-600' : 'text-red-600');
+            messageBox.classList.add('show');
+        }
+
+        closeMessageBox.addEventListener('click', () => {
+            messageBox.classList.remove('show');
+        });
+
+        // Initial call to update guest details if the page loads with a value (e.g., after a refresh)
+        updateGuestDetailsInputs();
+
+    </script>
+</body>
+</html>

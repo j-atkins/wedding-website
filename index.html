@@ -162,7 +162,7 @@
         .guest-block label {
             margin-bottom: 0.5rem;
         }
-        .guest-block .form-input, .guest-block .form-select, .guest-block .form-textarea {
+        .guest-block .form-input, .guest-block .form-select, .guest-block .form-textarea {                
             margin-bottom: 0.75rem; /* Adjust margin for inputs within guest block */
         }
     </style>
@@ -319,8 +319,7 @@
         const verifyPasscodeBtn = document.getElementById('verifyPasscodeBtn');
         const passcodeError = document.getElementById('passcodeError');
 
-        // IMPORTANT: Replace this with your deployed Google Apps Script Web App URL
-        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE'; // *** IMPORTANT: UPDATE THIS ***
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFWQBf3eqFbeGPL_J9dvw95UIYrO2Z5mZ91EG0sN1og7Viy8xwo37YC4Bl3wRJ54zAjQ/exec'; //
 
         // *** IMPORTANT: Set your desired passcode here ***
         const CORRECT_PASSCODE = 'wedding2025'; // Change this to your secret code!

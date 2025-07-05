@@ -1,12 +1,9 @@
-// NOTE THIS IS A SAMPLE SCRIPT FOR NOW 
-// NEEDS UPDATING FOR OUR ACTUAL DETAILS!
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Wedding</title>
+    <title>Saskia & Jamie's wedding</title>
     <!-- Tailwind CSS CDN for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -257,7 +254,7 @@
                         <label for="overallMessage" class="block text-gray-700 text-sm font-bold mb-2">Your Message (optional):</label>
                         <textarea id="overallMessage" name="Overall Message" class="form-textarea" placeholder="Any special requests or well wishes?"></textarea>
                     </div>
-                    <button type="submit" class="submit-button">Send RSVP</button>
+                    <button type="submit" class="submit-button" id="sendRsvpBtn">Send RSVP</button>
                 </form>
             </div>
         </div>
@@ -284,7 +281,7 @@
 
     <script>
         // --- Countdown Timer ---
-        const countdownDate = new Date("October 26, 2025 14:00:00").getTime();
+        const countdownDate = new Date("June 20, 2026 13:00:00").getTime();
         const countdownElement = document.getElementById("countdown");
 
         const updateCountdown = () => {
@@ -298,7 +295,7 @@
 
             if (distance < 0) {
                 clearInterval(countdownInterval);
-                countdownElement.innerHTML = "We're Married!";
+                countdownElement.innerHTML = "Welcome to the post-wedding era!";
             } else {
                 countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
             }
@@ -315,6 +312,7 @@
         const messageText = document.getElementById('messageText');
         const closeMessageBox = document.getElementById('closeMessageBox');
         const loadingOverlay = document.getElementById('loadingOverlay');
+        const sendRsvpBtn = document.getElementById('sendRsvpBtn');
 
         // Passcode elements
         const passcodeSection = document.getElementById('passcodeSection');
@@ -322,10 +320,10 @@
         const verifyPasscodeBtn = document.getElementById('verifyPasscodeBtn');
         const passcodeError = document.getElementById('passcodeError');
 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFWQBf3eqFbeGPL_J9dvw95UIYrO2Z5mZ91EG0sN1og7Viy8xwo37YC4Bl3wRJ54zAjQ/exec'; //
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyDe-wfS73ZiKMoBLPxbbIdVOfolnt3RX1jZG8I5Xy29pyK7dWgpJG6qGdU7M2xcqQEIw/exec'; //
 
         // *** IMPORTANT: Set your desired passcode here ***
-        const CORRECT_PASSCODE = 'wedding2025'; // Change this to your secret code!
+        const CORRECT_PASSCODE = 'sasjam2026';
 
         // Passcode verification
         verifyPasscodeBtn.addEventListener('click', () => {
@@ -418,17 +416,21 @@
         rsvpForm.addEventListener('submit', async (e) => {
             e.preventDefault(); // Prevent default form submission
 
+            // Disable and blank out the button to prevent multiple submissions
+            sendRsvpBtn.disabled = true;
+            // sendRsvpBtn.textContent = '';
+            sendRsvpBtn.style.backgroundColor = 'grey';
+
             loadingOverlay.classList.add('show'); // Show loading spinner
 
             const formData = new FormData(rsvpForm);
-            const data = {};
-            for (let [key, value] of formData.entries()) {
-                data[key] = value;
-            }
-
-            // Manually collect dynamically generated guest details
+            const primaryFullName = formData.get('Primary Full Name');
+            const primaryEmail = formData.get('Primary Email');
+            const overallMessage = formData.get('Overall Message');
             const count = parseInt(numGuestsRespondingInput.value);
-            const submissionCount = Math.min(count, 10); // Ensure we don't go over 10
+            const submissionCount = Math.min(count, 10);
+
+            let allSucceeded = true;
 
             for (let i = 0; i < submissionCount; i++) {
                 const guestIndex = i + 1;
@@ -437,52 +439,52 @@
                 const mealSelect = document.getElementById(`meal${guestIndex}`);
                 const allergiesInput = document.getElementById(`allergies${guestIndex}`);
 
-                if (guestNameInput) {
-                    data[`Guest ${guestIndex} Name`] = guestNameInput.value;
-                }
-                if (attendingGuestSelect) {
-                    data[`Attending Guest ${guestIndex}`] = attendingGuestSelect.value;
-                }
+                // Skip if guest name is empty (shouldn't happen with required fields)
+                if (!guestNameInput || !guestNameInput.value.trim()) continue;
 
-                // Only collect meal and allergies if the guest is attending
-                if (attendingGuestSelect && attendingGuestSelect.value === 'Yes') {
-                    if (mealSelect) {
-                        data[`Meal Preference Guest ${guestIndex}`] = mealSelect.value;
-                    }
-                    if (allergiesInput) {
-                        data[`Allergies Guest ${guestIndex}`] = allergiesInput.value;
-                    }
-                } else {
-                    // If not attending, ensure these fields are empty in the data sent
-                    data[`Meal Preference Guest ${guestIndex}`] = '';
-                    data[`Allergies Guest ${guestIndex}`] = '';
+                // Prepare row data for Google Sheet columns
+                const rowData = {
+                    'Primary Full Name': primaryFullName,
+                    'Primary Email': primaryEmail,
+                    'Guest Name': guestNameInput.value,
+                    'Attending': attendingGuestSelect ? attendingGuestSelect.value : '',
+                    'Meal Preference': (attendingGuestSelect && attendingGuestSelect.value === 'Yes' && mealSelect) ? mealSelect.value : '',
+                    'Allergies': (attendingGuestSelect && attendingGuestSelect.value === 'Yes' && allergiesInput) ? allergiesInput.value : '',
+                    'Overall Message': overallMessage
+                };
+
+                // Send a POST request for this guest
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams(rowData).toString(),
+                    });
+                } catch (error) {
+                    allSucceeded = false;
+                    console.error('Error submitting RSVP for guest', guestIndex, error);
                 }
             }
 
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Required for Google Apps Script as a web app
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams(data).toString(),
-                });
-
-                showMessage('Thank you for your RSVP! We look forward to celebrating with you.', 'success');
-                rsvpForm.reset(); // Clear the form
-                guestDetailsContainer.style.display = 'none'; // Hide guest details container
-                guestDetailsContainer.innerHTML = ''; // Clear guest details
-                // After successful submission, hide the form and show passcode section again
+            if (allSucceeded) {
+                showMessage('Thank you for your RSVP!', 'success');
+                rsvpForm.reset();
+                guestDetailsContainer.style.display = 'none';
+                guestDetailsContainer.innerHTML = '';
                 rsvpForm.style.display = 'none';
                 passcodeSection.style.display = 'block';
-                passcodeInput.value = ''; // Clear passcode input
-            } catch (error) {
-                console.error('Error submitting form:', error);
-                showMessage('There was an error submitting your RSVP. Please try again or contact us directly.', 'error');
-            } finally {
-                loadingOverlay.classList.remove('show'); // Hide loading spinner
+                passcodeInput.value = '';
+            } else {
+                showMessage('There was an error submitting one or more RSVPs. Please try again or contact us directly.', 'error');
             }
+            loadingOverlay.classList.remove('show');
+
+            // Re-enable and reset the button for future submissions (if form is shown again)
+            sendRsvpBtn.disabled = false;
+            sendRsvpBtn.textContent = 'Send RSVP';
         });
 
         // Message box functions
@@ -502,3 +504,4 @@
     </script>
 </body>
 </html>
+
